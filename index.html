@@ -22,7 +22,7 @@ html,body {
 function onLoad(){
 
     var pts = [];
-    var renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight,{antialias:true,backgroundColor : 0x000000});
+    var renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight,{antialias:false,backgroundColor : 0x000000});
     document.body.appendChild(renderer.view);
     var stage = new PIXI.Container();
     var top = 0;
@@ -30,65 +30,63 @@ function onLoad(){
     var bottom = window.innerHeight;
     var left = 0;
     var radius = 5;
-    var points = 3000;
-    var g = new PIXI.Graphics();
+    var points = 10000;
+    var img = createCircleCanvas();
+    var cnt = 0;
 
     function init() {
 
         for (var i = 0; i < points; i++) {
 
-            var pt = {};
-
-            pt.x = Math.random() * 500;
-            pt.y = Math.random() * 500;
-            pt.vx = 10 * Math.random();
-            pt.vy = 10 * Math.random();
-
-            g.beginFill(0xff0022);
-            g.drawCircle(pt.x,pt.y,radius);
-            g.endFill();
-
-            pts.push(pt);
+            var particle = {};
+            particle.pointTexture = new PIXI.Texture.fromImage(img);
+            // particle.pointTexture = new PIXI.Texture.fromCanvas(createCircleCanvas());
+            particle.pixiCircle = new PIXI.Sprite(particle.pointTexture);
+            particle.pixiCircle.position.x = Math.random() * window.innerWidth;
+            particle.pixiCircle.position.y = Math.random() * window.innerHeight;
+            particle.pixiCircle.anchor.x = 0.5;
+            particle.pixiCircle.anchor.y = 0.5;
+            particle.pixiCircle.scale.x = 0.5;
+            particle.pixiCircle.scale.y = 0.5;
+            particle.pixiCircle.position.vx = Math.random() * 5;
+            particle.pixiCircle.position.vy = Math.random() * 5;
+            stage.addChild(particle.pixiCircle);
+            pts.push(particle.pixiCircle);
             
         }
-
-        stage.addChild(g);
-
     }
 
     function update() {
-
-        g.clear();
-        
 
         for (var i = 0; i < points; i++) {
 
             var pt = pts[i];
             
-            pt.x += pt.vx;
-            pt.y += pt.vy;
+            pt.position.x += pt.position.vx;
+            pt.position.y += pt.position.vy;
 
-            if(pt.x + radius > right) {
-                pt.x = right - radius;
-                pt.vx *= -1;
-            } else if(pt.x - radius < left) {
-                pt.x = left + radius;
-                pt.vx *= -1;
+            pt.scale.x = Math.sin(cnt/100);
+            pt.scale.y = Math.sin(cnt/100);
+
+            if(pt.position.x + radius > right) {
+                pt.position.x = right - radius;
+                pt.position.vx *= -1;
+            } else if(pt.position.x - radius < left) {
+                pt.position.x = left + radius;
+                pt.position.vx *= -1;
             }
 
-            if(pt.y + radius > bottom ){
-                pt.y = bottom - radius;
-                pt.vy *= -1;
-            } else if(pt.y - radius < top) {
-                pt.y = top + radius;
-                pt.vy *= -1;
+            if(pt.position.y + radius > bottom ){
+                pt.position.y = bottom - radius;
+                pt.position.vy *= -1;
+            } else if(pt.position.y - radius < top) {
+                pt.position.y = top + radius;
+                pt.position.vy *= -1;
             }
-        
-            g.beginFill(0xff0022);    
-            g.drawCircle(pt.x,pt.y,radius);
-            g.endFill();
 
         }  
+
+        cnt++;
 
     }
 
@@ -112,6 +110,25 @@ function onLoad(){
 }
 
 window.addEventListener('load',onLoad,false);
+
+
+function createCircleCanvas() {
+    var canvas = document.createElement('canvas');
+    var SIZE = 20;
+    var HALF = SIZE / 2;
+    var CENTER = SIZE / 2;
+    canvas.width = SIZE;
+    canvas.height = SIZE;
+    var context = canvas.getContext('2d');
+    context.lineWidth = 0;
+    context.beginPath();
+    context.arc(CENTER, CENTER, HALF, 0, 2 * Math.PI, false);
+    var grad = context.createRadialGradient(CENTER, CENTER, 0, CENTER, CENTER, HALF);
+    context.fillStyle = 'rgba(255,0,0,1)';
+    context.fill();
+    context.closePath();
+    return canvas.toDataURL("image/png");
+}
 
 </script>
 </body>
